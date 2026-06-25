@@ -38,7 +38,7 @@ export default function Home() {
         experience,
         skills,
         projectCount,
-        resumeFileName: resumeFile.name,
+        resumeFile,           // File object — api.js builds FormData from it
       })
 
       setApiResult(data)
