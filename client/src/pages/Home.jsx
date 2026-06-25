@@ -4,6 +4,7 @@ import Hero from '../components/Hero'
 import AnalysisForm from '../components/AnalysisForm'
 import ResultCards from '../components/ResultCards'
 import Roadmap from '../components/Roadmap'
+import { runAnalysisEngine } from '../utils/analysisEngine'
 
 export default function Home() {
   const [role, setRole] = useState('Senior Product Designer')
@@ -11,11 +12,14 @@ export default function Home() {
   const [skills, setSkills] = useState(['React', 'TailwindCSS', 'Figma'])
   const [projectCount, setProjectCount] = useState(3)
   const [resumeFile, setResumeFile] = useState(null)
+
   const [submitted, setSubmitted] = useState(false)
-  const [analysisData, setAnalysisData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [engineResult, setEngineResult] = useState(null)
+  const [apiError, setApiError] = useState(null)
   const [errors, setErrors] = useState({})
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     const newErrors = {}
     if (!role) newErrors.role = 'Please select a target role.'
     if (!resumeFile) newErrors.resume = 'Please upload your resume.'
@@ -24,8 +28,33 @@ export default function Home() {
       return
     }
     setErrors({})
-    setAnalysisData({ role, experience, skills, projectCount, resumeFile })
+    setLoading(true)
+    setApiError(null)
+
+    try {
+      // Send to backend for logging / future Groq integration
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role,
+          experience,
+          skills,
+          projectCount,
+          resumeFileName: resumeFile.name,
+        }),
+      })
+      if (!res.ok) throw new Error(`Server error: ${res.status}`)
+    } catch (err) {
+      // Non-fatal: still run local engine even if backend is down
+      setApiError(`Backend unavailable — showing local results. (${err.message})`)
+    }
+
+    // Always run local engine regardless of backend status
+    const result = runAnalysisEngine({ role, experience, skills, projectCount })
+    setEngineResult(result)
     setSubmitted(true)
+    setLoading(false)
   }
 
   return (
@@ -42,10 +71,17 @@ export default function Home() {
             resumeFile={resumeFile} setResumeFile={setResumeFile}
             onAnalyze={handleAnalyze}
             errors={errors}
+            loading={loading}
+            apiError={apiError}
           />
-          <ResultCards submitted={submitted} analysisData={analysisData} />
+          <ResultCards
+            submitted={submitted}
+            engineResult={engineResult}
+            role={role}
+            experience={experience}
+          />
         </div>
-        <Roadmap />
+        <Roadmap engineResult={engineResult} />
       </main>
       <footer className="border-t border-white/10 mt-16 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">

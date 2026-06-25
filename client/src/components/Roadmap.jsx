@@ -1,21 +1,21 @@
-const steps = [
+const DEFAULT_STEPS = [
   {
     num: 1,
     title: 'Skill Mastery',
     description: 'Complete Advanced TS & Design Patterns certification.',
-    duration: 'ETAs: 6 Weeks',
+    duration: 'ETA: 6 Weeks',
   },
   {
     num: 2,
     title: 'Portfolio Pivot',
     description: 'Document 3 high-scale engineering projects.',
-    duration: 'ETAs: 3 Weeks',
+    duration: 'ETA: 3 Weeks',
   },
   {
     num: 3,
     title: 'Mock Interviews',
     description: 'Complete 5 AI-driven behavioral technical simulations.',
-    duration: 'ETAs: 1 Week',
+    duration: 'ETA: 1 Week',
   },
   {
     num: 4,
@@ -25,7 +25,9 @@ const steps = [
   },
 ]
 
-export default function Roadmap() {
+export default function Roadmap({ engineResult }) {
+  const steps = engineResult?.roadmap ?? DEFAULT_STEPS
+
   return (
     <section className="mt-12">
       <h2 className="text-white font-semibold text-xl mb-6">Recommended Roadmap</h2>

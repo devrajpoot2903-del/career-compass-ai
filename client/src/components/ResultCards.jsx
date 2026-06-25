@@ -1,67 +1,42 @@
 // Demo values shown before first submission
 const DEMO = {
+  score: 85,
+  candidateLevel: 'High-Potential Candidate',
   strengths: [
     'Modern UI Systems Architecture',
     'Cross-functional Lead Experience',
     'Performance Optimization Specialist',
   ],
-  skillGaps: [
-    { skill: 'Advanced TypeScript', priority: 'High Priority', color: 'bg-red-500', pct: 80 },
-    { skill: 'CI/CD Pipeline Design', priority: 'Mid Priority', color: 'bg-yellow-500', pct: 50 },
+  gaps: [
+    { label: 'Advanced TypeScript', priority: 'High Priority', color: 'bg-red-500', pct: 80 },
+    { label: 'CI/CD Pipeline Design', priority: 'Mid Priority', color: 'bg-yellow-500', pct: 50 },
   ],
   altPaths: [
     { title: 'UX Engineer', rank: '92% Match' },
     { title: 'Systems Bot', rank: '78% Match' },
   ],
-  score: 85,
 }
 
-// Generate derived display values from submitted form data
-function deriveResults(data) {
-  const skillCount = data.skills.length
-  const score = Math.min(95, 55 + skillCount * 4 + data.projectCount * 2)
-
-  const strengths = [
-    `${data.role} Domain Expertise`,
-    `${data.experience} Professional Experience`,
-    skillCount > 0 ? `${data.skills[0]} Proficiency` : 'Broad Technical Background',
-  ]
-
-  const skillGaps = [
-    { skill: 'System Design & Architecture', priority: 'High Priority', color: 'bg-red-500', pct: 75 },
-    { skill: 'Leadership & Team Management', priority: 'Mid Priority', color: 'bg-yellow-500', pct: 45 },
-  ]
-
-  const altPaths = [
-    { title: 'Tech Lead', rank: `${Math.min(98, score + 5)}% Match` },
-    { title: 'Engineering Manager', rank: `${Math.min(95, score - 5)}% Match` },
-  ]
-
-  return { score, strengths, skillGaps, altPaths }
-}
-
-export default function ResultCards({ submitted, analysisData }) {
-  const display = submitted && analysisData ? deriveResults(analysisData) : DEMO
+export default function ResultCards({ submitted, engineResult, role, experience }) {
+  const display = submitted && engineResult ? engineResult : DEMO
 
   return (
     <div className="flex flex-col gap-4">
 
       {/* Submitted badge */}
-      {submitted && analysisData && (
+      {submitted && engineResult && (
         <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-2.5">
           <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <p className="text-xs text-emerald-400 font-medium">
-            Analysis complete for <span className="text-white">{analysisData.role}</span>
-            {' · '}<span className="text-gray-400">{analysisData.experience}</span>
-            {' · '}<span className="text-gray-400">{analysisData.skills.length} skills</span>
-            {' · '}<span className="text-gray-400">{analysisData.projectCount} projects</span>
+            Analysis complete for <span className="text-white">{role}</span>
+            {' · '}<span className="text-gray-400">{experience}</span>
           </p>
         </div>
       )}
 
-      {/* Top row: Score + High Potential */}
+      {/* Top row: Score + Candidate Level */}
       <div className="grid grid-cols-2 gap-4">
 
         {/* Readiness Score */}
@@ -85,7 +60,7 @@ export default function ResultCards({ submitted, analysisData }) {
           <p className="text-xs text-gray-500 text-center font-medium">Readiness Score</p>
         </div>
 
-        {/* High Potential Candidate */}
+        {/* Candidate Level */}
         <div className="bg-[#13151c] border border-white/10 rounded-2xl p-5 flex flex-col items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
             <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +68,7 @@ export default function ResultCards({ submitted, analysisData }) {
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-white text-sm font-semibold">High-Potential Candidate</p>
+            <p className="text-white text-sm font-semibold">{display.candidateLevel}</p>
             <p className="text-gray-500 text-xs mt-0.5">Tier 1 Analysis</p>
           </div>
         </div>
@@ -116,10 +91,10 @@ export default function ResultCards({ submitted, analysisData }) {
       <div className="bg-[#13151c] border border-white/10 rounded-2xl p-5">
         <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-4">Skill Gaps (Priority)</p>
         <div className="flex flex-col gap-4">
-          {display.skillGaps.map((gap, i) => (
+          {display.gaps.map((gap, i) => (
             <div key={i}>
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-sm text-gray-300">{gap.skill}</span>
+                <span className="text-sm text-gray-300">{gap.label}</span>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
                   gap.priority === 'High Priority'
                     ? 'bg-red-500/20 text-red-400'
