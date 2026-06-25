@@ -4,7 +4,7 @@ import Hero from '../components/Hero'
 import AnalysisForm from '../components/AnalysisForm'
 import ResultCards from '../components/ResultCards'
 import Roadmap from '../components/Roadmap'
-import { runAnalysisEngine } from '../utils/analysisEngine'
+import { analyzeProfile } from '../services/api'
 
 export default function Home() {
   const [role, setRole] = useState('Senior Product Designer')
@@ -15,7 +15,7 @@ export default function Home() {
 
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [engineResult, setEngineResult] = useState(null)
+  const [apiResult, setApiResult] = useState(null)
   const [apiError, setApiError] = useState(null)
   const [errors, setErrors] = useState({})
 
@@ -27,34 +27,31 @@ export default function Home() {
       setErrors(newErrors)
       return
     }
+
     setErrors({})
     setLoading(true)
     setApiError(null)
 
     try {
-      // Send to backend for logging / future Groq integration
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role,
-          experience,
-          skills,
-          projectCount,
-          resumeFileName: resumeFile.name,
-        }),
+      const { data } = await analyzeProfile({
+        role,
+        experience,
+        skills,
+        projectCount,
+        resumeFileName: resumeFile.name,
       })
-      if (!res.ok) throw new Error(`Server error: ${res.status}`)
-    } catch (err) {
-      // Non-fatal: still run local engine even if backend is down
-      setApiError(`Backend unavailable — showing local results. (${err.message})`)
-    }
 
-    // Always run local engine regardless of backend status
-    const result = runAnalysisEngine({ role, experience, skills, projectCount })
-    setEngineResult(result)
-    setSubmitted(true)
-    setLoading(false)
+      setApiResult(data)
+      setSubmitted(true)
+    } catch (err) {
+      setApiError(
+        err?.response?.data?.message ||
+        err.message ||
+        'Failed to connect to server. Is it running on port 5000?'
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -76,12 +73,12 @@ export default function Home() {
           />
           <ResultCards
             submitted={submitted}
-            engineResult={engineResult}
+            apiResult={apiResult}
             role={role}
             experience={experience}
           />
         </div>
-        <Roadmap engineResult={engineResult} />
+        <Roadmap apiResult={apiResult} />
       </main>
       <footer className="border-t border-white/10 mt-16 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">

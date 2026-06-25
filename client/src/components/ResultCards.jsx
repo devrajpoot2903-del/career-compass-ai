@@ -17,14 +17,37 @@ const DEMO = {
   ],
 }
 
-export default function ResultCards({ submitted, engineResult, role, experience }) {
-  const display = submitted && engineResult ? engineResult : DEMO
+// Map flat backend arrays into display shape
+function mapResult(apiResult) {
+  const gaps = (apiResult.gaps || []).map((label, i) => ({
+    label,
+    priority: i === 0 ? 'High Priority' : 'Mid Priority',
+    color:    i === 0 ? 'bg-red-500'   : 'bg-yellow-500',
+    pct:      i === 0 ? 75             : 45,
+  }))
+
+  const altPaths = (apiResult.altPaths || []).map((title, i) => ({
+    title,
+    rank: `${92 - i * 10}% Match`,
+  }))
+
+  return {
+    score:          apiResult.score ?? 75,
+    candidateLevel: apiResult.candidateLevel ?? 'High Potential Candidate',
+    strengths:      apiResult.strengths ?? [],
+    gaps,
+    altPaths,
+  }
+}
+
+export default function ResultCards({ submitted, apiResult, role, experience }) {
+  const display = submitted && apiResult ? mapResult(apiResult) : DEMO
 
   return (
     <div className="flex flex-col gap-4">
 
       {/* Submitted badge */}
-      {submitted && engineResult && (
+      {submitted && apiResult && (
         <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-2.5">
           <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

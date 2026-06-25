@@ -25,8 +25,16 @@ const DEFAULT_STEPS = [
   },
 ]
 
-export default function Roadmap({ engineResult }) {
-  const steps = engineResult?.roadmap ?? DEFAULT_STEPS
+export default function Roadmap({ apiResult }) {
+  // Backend returns roadmap as string[], convert to step objects for display
+  const steps = apiResult?.roadmap
+    ? apiResult.roadmap.map((title, i) => ({
+        num: i + 1,
+        title,
+        description: '',
+        duration: '',
+      }))
+    : DEFAULT_STEPS
 
   return (
     <section className="mt-12">

@@ -7,21 +7,10 @@ const api = axios.create({
   },
 })
 
-// ── Analysis ─────────────────────────────────────────────────────────────────
-
 /**
- * Upload a resume PDF and optional job description for analysis.
- * @param {FormData} formData - Must contain `resume` (File) and optionally `jobDescription` (string)
+ * POST /api/analyze
+ * @param {{ role, experience, skills, projectCount, resumeFileName }} payload
  */
-export const analyzeResume = (formData) =>
-  api.post('/api/analysis', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
-
-/**
- * Fetch a previously saved analysis by ID.
- * @param {string} id
- */
-export const getAnalysis = (id) => api.get(`/api/analysis/${id}`)
+export const analyzeProfile = (payload) => api.post('/api/analyze', payload)
 
 export default api
