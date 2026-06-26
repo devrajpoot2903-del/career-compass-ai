@@ -1,13 +1,14 @@
-const pdfParse = require('pdf-parse')
+const { PDFParse } = require('pdf-parse')
 
 /**
- * Parses a PDF buffer and returns the extracted plain text.
- * @param {Buffer} buffer - File buffer from Multer memory storage
+ * Parses a PDF from a disk path and returns the extracted plain text.
+ * @param {string} filePath - Absolute path to the PDF on disk
  * @returns {Promise<string>} Extracted text content
  */
-const parseResume = async (buffer) => {
-  const data = await pdfParse(buffer)
-  return data.text.trim()
+const parseResume = async (filePath) => {
+  const parser = new PDFParse({ url: filePath })
+  const result = await parser.getText()
+  return result.text.trim()
 }
 
 module.exports = { parseResume }

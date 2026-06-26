@@ -1,15 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const upload = require('../middleware/upload')
-const {
-  createAnalysis,
-  getAnalysisById,
-} = require('../controllers/analysisController')
+const { analyze } = require('../controllers/analysisController')
 
-// POST /api/analysis  — upload resume + optional job description
-router.post('/', upload.single('resume'), createAnalysis)
-
-// GET  /api/analysis/:id — fetch saved analysis
-router.get('/:id', getAnalysisById)
+// POST /api/analyze — multipart/form-data (resume PDF + JSON fields)
+router.post('/', upload.single('resume'), analyze)
 
 module.exports = router

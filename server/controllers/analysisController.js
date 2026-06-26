@@ -1,41 +1,49 @@
-const Analysis = require('../models/Analysis')
+const fs = require('fs')
 const { parseResume } = require('../services/resumeParser')
-const { analyzeWithGroq } = require('../services/groqService')
+const { analyzeResume } = require('../services/groqService')
 
-// POST /api/analysis
-exports.createAnalysis = async (req, res, next) => {
+// POST /api/analyze
+exports.analyze = async (req, res, next) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'Resume PDF is required.' })
+      return res.status(400).json({ success: false, message: 'No resume file uploaded.' })
     }
 
-    const resumeText = await parseResume(req.file.buffer)
-    const jobDescription = req.body.jobDescription || ''
+    const { role, experience, skills, projectCount } = req.body
 
-    const groqResponse = await analyzeWithGroq(resumeText, jobDescription)
+    console.log('\n📥 [analyze] Request received:')
+    console.log('  role          :', role)
+    console.log('  experience    :', experience)
+    console.log('  skills        :', skills)
+    console.log('  projectCount  :', projectCount)
+    console.log('  file saved to :', req.file.path)
 
-    const analysis = await Analysis.create({
-      resumeText,
-      jobDescription,
-      groqResponse,
-      status: 'completed',
+    // Step 1: Extract text from PDF
+    const resumeText = await parseResume(req.file.path)
+
+    // Step 2: Delete temp file immediately after extraction
+    fs.unlinkSync(req.file.path)
+    console.log('  temp file deleted ✓')
+
+    console.log('\n📄 Extracted Resume Text (first 500 chars):')
+    console.log(resumeText.slice(0, 500))
+    console.log('...')
+
+    // Step 3: Send to Groq for analysis
+    console.log('\n🤖 Sending to Groq...')
+    const groqResult = await analyzeResume(resumeText)
+    console.log('✅ Groq response received:', JSON.stringify(groqResult, null, 2))
+
+    // Step 4: Return Groq result spread into response
+    return res.status(200).json({
+      success: true,
+      ...groqResult,
     })
-
-    res.status(201).json({ success: true, data: analysis })
-  } catch (error) {
-    next(error)
-  }
-}
-
-// GET /api/analysis/:id
-exports.getAnalysisById = async (req, res, next) => {
-  try {
-    const analysis = await Analysis.findById(req.params.id)
-    if (!analysis) {
-      return res.status(404).json({ message: 'Analysis not found.' })
+  } catch (err) {
+    // Clean up temp file if anything fails before deletion
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path)
     }
-    res.json({ success: true, data: analysis })
-  } catch (error) {
-    next(error)
+    next(err)
   }
 }

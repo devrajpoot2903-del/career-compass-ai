@@ -1,7 +1,16 @@
 const multer = require('multer')
+const path = require('path')
 
-// Store file in memory so pdf-parse can read the buffer directly
-const storage = multer.memoryStorage()
+// Save to disk in /uploads so we can demonstrate file write + delete cycle
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, path.join(__dirname, '../uploads'))
+  },
+  filename: (_req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`
+    cb(null, `${unique}-${file.originalname}`)
+  },
+})
 
 const fileFilter = (_req, file, cb) => {
   if (file.mimetype === 'application/pdf') {
