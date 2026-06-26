@@ -6,6 +6,7 @@ const morgan = require('morgan')
 
 const errorHandler = require('./middleware/errorHandler')
 const analysisRoutes = require('./routes/analysisRoutes')
+const historyRoutes  = require('./routes/historyRoutes')
 
 const app = express()
 
@@ -18,7 +19,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // ── Routes ─────────────────────────────────────────────────────────────────
-app.use('/api/analyze', analysisRoutes)
+app.use('/api/analyze',   analysisRoutes)
+app.use('/api/analysis',  historyRoutes)
 
 // ── Health Check ───────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))

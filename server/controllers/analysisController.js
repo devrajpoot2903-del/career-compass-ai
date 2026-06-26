@@ -64,3 +64,21 @@ exports.analyze = async (req, res, next) => {
     next(err)
   }
 }
+
+// GET /api/analysis/history
+exports.getHistory = async (_req, res, next) => {
+  try {
+    const records = await Analysis
+      .find()
+      .select('_id resumeName targetRole experience score candidateLevel createdAt')
+      .sort({ createdAt: -1 })
+
+    return res.status(200).json({
+      success: true,
+      count:   records.length,
+      data:    records,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
