@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { parseResume } = require('../services/resumeParser')
 const { analyzeResume } = require('../services/groqService')
+const Analysis = require('../models/Analysis')
 
 // POST /api/analyze
 exports.analyze = async (req, res, next) => {
@@ -34,7 +35,23 @@ exports.analyze = async (req, res, next) => {
     const groqResult = await analyzeResume(resumeText)
     console.log('✅ Groq response received:', JSON.stringify(groqResult, null, 2))
 
-    // Step 4: Return Groq result spread into response
+    // Step 4: Save analysis to MongoDB
+    const saved = await Analysis.create({
+      targetRole:     role,
+      experience:     experience,
+      skills:         Array.isArray(skills) ? skills : [skills].filter(Boolean),
+      projectCount:   Number(projectCount) || 0,
+      score:          groqResult.score,
+      candidateLevel: groqResult.candidateLevel,
+      strengths:      groqResult.strengths,
+      gaps:           groqResult.gaps,
+      altPaths:       groqResult.altPaths,
+      roadmap:        groqResult.roadmap,
+      resumeName:     req.file.originalname,
+    })
+    console.log('💾 Analysis saved to MongoDB, id:', saved._id)
+
+    // Step 5: Return Groq result — API response unchanged
     return res.status(200).json({
       success: true,
       ...groqResult,

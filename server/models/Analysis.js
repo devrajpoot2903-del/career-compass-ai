@@ -2,25 +2,52 @@ const mongoose = require('mongoose')
 
 const analysisSchema = new mongoose.Schema(
   {
-    resumeText: {
+    targetRole: {
       type: String,
       required: true,
     },
-    jobDescription: {
+    experience: {
       type: String,
-      default: '',
+      required: true,
     },
-    groqResponse: {
-      type: mongoose.Schema.Types.Mixed,
-      default: null,
+    skills: {
+      type: [String],
+      default: [],
     },
-    status: {
+    projectCount: {
+      type: Number,
+      default: 0,
+    },
+    score: {
+      type: Number,
+    },
+    candidateLevel: {
       type: String,
-      enum: ['pending', 'completed', 'failed'],
-      default: 'pending',
+    },
+    strengths: {
+      type: [String],
+      default: [],
+    },
+    gaps: {
+      type: [String],
+      default: [],
+    },
+    altPaths: {
+      type: [String],
+      default: [],
+    },
+    roadmap: {
+      type: [String],
+      default: [],
+    },
+    resumeName: {
+      type: String,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,       // auto-adds createdAt and updatedAt
+    collection: 'analyses', // explicit collection name
+  }
 )
 
 module.exports = mongoose.model('Analysis', analysisSchema)
