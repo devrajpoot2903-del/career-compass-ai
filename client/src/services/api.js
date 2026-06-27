@@ -14,12 +14,17 @@ export const analyzeProfile = ({ role, experience, skills, projectCount, resumeF
   form.append('role', role)
   form.append('experience', experience)
   form.append('projectCount', String(projectCount))
-  // skills is an array — append each item separately so express can read req.body.skills
   skills.forEach((s) => form.append('skills', s))
 
   return api.post('/api/analyze', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
+
+/**
+ * GET /api/analysis/history
+ * Returns all past analyses sorted newest first.
+ */
+export const getHistory = () => api.get('/api/analysis/history')
 
 export default api

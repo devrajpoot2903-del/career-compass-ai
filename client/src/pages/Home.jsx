@@ -4,6 +4,7 @@ import Hero from '../components/Hero'
 import AnalysisForm from '../components/AnalysisForm'
 import ResultCards from '../components/ResultCards'
 import Roadmap from '../components/Roadmap'
+import HistoryPanel from '../components/HistoryPanel'
 import { analyzeProfile } from '../services/api'
 
 export default function Home() {
@@ -79,6 +80,7 @@ export default function Home() {
           />
         </div>
         <Roadmap apiResult={apiResult} />
+        <HistoryPanel />
       </main>
       <footer className="border-t border-white/10 mt-16 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
