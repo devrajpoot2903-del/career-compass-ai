@@ -19,10 +19,8 @@ exports.analyze = async (req, res, next) => {
     console.log('  projectCount  :', projectCount)
     console.log('  file saved to :', req.file.path)
 
-    // Step 1: Extract text from PDF
     const resumeText = await parseResume(req.file.path)
 
-    // Step 2: Delete temp file immediately after extraction
     fs.unlinkSync(req.file.path)
     console.log('  temp file deleted ✓')
 
@@ -30,12 +28,10 @@ exports.analyze = async (req, res, next) => {
     console.log(resumeText.slice(0, 500))
     console.log('...')
 
-    // Step 3: Send to Groq for analysis
     console.log('\n🤖 Sending to Groq...')
     const groqResult = await analyzeResume(resumeText)
     console.log('✅ Groq response received:', JSON.stringify(groqResult, null, 2))
 
-    // Step 4: Save analysis to MongoDB
     const saved = await Analysis.create({
       targetRole:     role,
       experience:     experience,
@@ -51,13 +47,11 @@ exports.analyze = async (req, res, next) => {
     })
     console.log('💾 Analysis saved to MongoDB, id:', saved._id)
 
-    // Step 5: Return Groq result — API response unchanged
     return res.status(200).json({
       success: true,
       ...groqResult,
     })
   } catch (err) {
-    // Clean up temp file if anything fails before deletion
     if (req.file?.path && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path)
     }
@@ -78,6 +72,21 @@ exports.getHistory = async (_req, res, next) => {
       count:   records.length,
       data:    records,
     })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// GET /api/analysis/:id
+exports.getAnalysisById = async (req, res, next) => {
+  try {
+    const record = await Analysis.findById(req.params.id)
+
+    if (!record) {
+      return res.status(404).json({ success: false, message: 'Analysis not found.' })
+    }
+
+    return res.status(200).json({ success: true, data: record })
   } catch (err) {
     next(err)
   }

@@ -1,4 +1,5 @@
-// Formats ISO date string into a readable label e.g. "Jun 27, 2025 · 12:34 PM"
+import { getAnalysisById } from '../services/api'
+
 function formatDate(iso) {
   const d = new Date(iso)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -6,22 +7,32 @@ function formatDate(iso) {
     + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
-// Score colour ring: red < 50, yellow < 70, green >= 70
 function scoreColor(score) {
-  if (score >= 70) return '#22c55e'   // green-500
-  if (score >= 50) return '#eab308'   // yellow-500
-  return '#ef4444'                    // red-500
+  if (score >= 70) return '#22c55e'
+  if (score >= 50) return '#eab308'
+  return '#ef4444'
 }
 
 export default function HistoryCard({ record }) {
-  const { resumeName, targetRole, experience, score, candidateLevel, createdAt } = record
-  const color = scoreColor(score)
-  const dash  = 251.2
+  const { _id, resumeName, targetRole, experience, score, candidateLevel, createdAt } = record
+  const color  = scoreColor(score)
+  const dash   = 251.2
   const offset = dash - (dash * (score ?? 0)) / 100
 
-  return (
-    <div className="bg-[#13151c] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.03] transition-all duration-200">
+  const handleClick = async () => {
+    try {
+      const { data } = await getAnalysisById(_id)
+      console.log('📂 Full analysis record:', data)
+    } catch (err) {
+      console.error('❌ Failed to fetch analysis:', err.message)
+    }
+  }
 
+  return (
+    <div
+      onClick={handleClick}
+      className="bg-[#13151c] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.03] transition-all duration-200 cursor-pointer"
+    >
       {/* Score ring */}
       <div className="relative w-14 h-14 flex-shrink-0">
         <svg className="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
@@ -51,8 +62,13 @@ export default function HistoryCard({ record }) {
         </div>
       </div>
 
-      {/* Date */}
-      <p className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0">{formatDate(createdAt)}</p>
+      {/* Date + arrow */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <p className="text-xs text-gray-600 whitespace-nowrap">{formatDate(createdAt)}</p>
+        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
     </div>
   )
 }
