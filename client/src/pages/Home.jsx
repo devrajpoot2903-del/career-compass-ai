@@ -5,7 +5,7 @@ import AnalysisForm from '../components/AnalysisForm'
 import ResultCards from '../components/ResultCards'
 import Roadmap from '../components/Roadmap'
 import HistoryPanel from '../components/HistoryPanel'
-import { analyzeProfile, getAnalysisById } from '../services/api'
+import { analyzeProfile } from '../services/api'
 
 export default function Home() {
   const [role, setRole] = useState('Senior Product Designer')
@@ -19,11 +19,6 @@ export default function Home() {
   const [apiResult, setApiResult] = useState(null)
   const [apiError, setApiError] = useState(null)
   const [errors, setErrors] = useState({})
-  const [selectedAnalysis, setSelectedAnalysis] = useState(null)
-
-  // Derived display values — selectedAnalysis overrides apiResult for rendering only
-  const displayResult  = selectedAnalysis ?? apiResult
-  const isSubmitted    = submitted || selectedAnalysis !== null
 
   const handleAnalyze = async () => {
     const newErrors = {}
@@ -37,7 +32,6 @@ export default function Home() {
     setErrors({})
     setLoading(true)
     setApiError(null)
-    setSelectedAnalysis(null) // clear history override so fresh result shows
 
     try {
       const { data } = await analyzeProfile({
@@ -61,15 +55,6 @@ export default function Home() {
     }
   }
 
-  const handleHistorySelect = async (id) => {
-    try {
-      const { data } = await getAnalysisById(id)
-      setSelectedAnalysis(data.data)
-    } catch (err) {
-      console.error('Failed to fetch analysis:', err.message)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white font-sans">
       <Navbar />
@@ -88,14 +73,14 @@ export default function Home() {
             apiError={apiError}
           />
           <ResultCards
-            submitted={isSubmitted}
-            apiResult={displayResult}
+            submitted={submitted}
+            apiResult={apiResult}
             role={role}
             experience={experience}
           />
         </div>
-        <Roadmap apiResult={displayResult} />
-        <HistoryPanel onSelect={handleHistorySelect} />
+        <Roadmap apiResult={apiResult} />
+        <HistoryPanel />
       </main>
       <footer className="border-t border-white/10 mt-16 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">

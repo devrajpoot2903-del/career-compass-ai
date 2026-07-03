@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { getHistory } from '../services/api'
 import HistoryCard from './HistoryCard'
 
-export default function HistoryPanel({ onSelect }) {
+export default function HistoryPanel() {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error,   setError]   = useState(null)
@@ -30,7 +30,6 @@ export default function HistoryPanel({ onSelect }) {
 
   return (
     <section className="mt-12">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-white font-semibold text-xl">Analysis History</h2>
@@ -43,7 +42,6 @@ export default function HistoryPanel({ onSelect }) {
         )}
       </div>
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="flex flex-col gap-3">
           {[1, 2, 3].map((i) => (
@@ -52,7 +50,6 @@ export default function HistoryPanel({ onSelect }) {
         </div>
       )}
 
-      {/* Error state */}
       {!loading && error && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-5 py-4 flex items-center gap-3">
           <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +59,6 @@ export default function HistoryPanel({ onSelect }) {
         </div>
       )}
 
-      {/* Empty state */}
       {!loading && !error && records.length === 0 && (
         <div className="bg-[#13151c] border border-white/10 rounded-2xl py-14 flex flex-col items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
@@ -75,11 +71,10 @@ export default function HistoryPanel({ onSelect }) {
         </div>
       )}
 
-      {/* Record list */}
       {!loading && !error && records.length > 0 && (
         <div className="flex flex-col gap-3">
           {records.map((record) => (
-            <HistoryCard key={record._id} record={record} onSelect={onSelect} />
+            <HistoryCard key={record._id} record={record} />
           ))}
         </div>
       )}

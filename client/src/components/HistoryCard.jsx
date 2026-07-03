@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+
 function formatDate(iso) {
   const d = new Date(iso)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -11,7 +13,8 @@ function scoreColor(score) {
   return '#ef4444'
 }
 
-export default function HistoryCard({ record, onSelect }) {
+export default function HistoryCard({ record }) {
+  const navigate = useNavigate()
   const { _id, resumeName, targetRole, experience, score, candidateLevel, createdAt } = record
   const color  = scoreColor(score)
   const dash   = 251.2
@@ -19,7 +22,7 @@ export default function HistoryCard({ record, onSelect }) {
 
   return (
     <div
-      onClick={() => onSelect(_id)}
+      onClick={() => navigate(`/analysis/${_id}`)}
       className="bg-[#13151c] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.03] transition-all duration-200 cursor-pointer"
     >
       {/* Score ring */}
