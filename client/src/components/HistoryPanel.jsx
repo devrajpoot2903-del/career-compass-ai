@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { getHistory } from '../services/api'
 import HistoryCard from './HistoryCard'
 
-export default function HistoryPanel() {
-  const [records, setRecords]   = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error,   setError]     = useState(null)
+export default function HistoryPanel({ onSelect }) {
+  const [records, setRecords] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -47,10 +47,7 @@ export default function HistoryPanel() {
       {loading && (
         <div className="flex flex-col gap-3">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-[#13151c] border border-white/10 rounded-2xl p-5 h-24 animate-pulse"
-            />
+            <div key={i} className="bg-[#13151c] border border-white/10 rounded-2xl p-5 h-24 animate-pulse" />
           ))}
         </div>
       )}
@@ -82,7 +79,7 @@ export default function HistoryPanel() {
       {!loading && !error && records.length > 0 && (
         <div className="flex flex-col gap-3">
           {records.map((record) => (
-            <HistoryCard key={record._id} record={record} />
+            <HistoryCard key={record._id} record={record} onSelect={onSelect} />
           ))}
         </div>
       )}

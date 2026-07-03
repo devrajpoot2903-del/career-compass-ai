@@ -1,5 +1,3 @@
-import { getAnalysisById } from '../services/api'
-
 function formatDate(iso) {
   const d = new Date(iso)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -13,24 +11,15 @@ function scoreColor(score) {
   return '#ef4444'
 }
 
-export default function HistoryCard({ record }) {
+export default function HistoryCard({ record, onSelect }) {
   const { _id, resumeName, targetRole, experience, score, candidateLevel, createdAt } = record
   const color  = scoreColor(score)
   const dash   = 251.2
   const offset = dash - (dash * (score ?? 0)) / 100
 
-  const handleClick = async () => {
-    try {
-      const { data } = await getAnalysisById(_id)
-      console.log('📂 Full analysis record:', data)
-    } catch (err) {
-      console.error('❌ Failed to fetch analysis:', err.message)
-    }
-  }
-
   return (
     <div
-      onClick={handleClick}
+      onClick={() => onSelect(_id)}
       className="bg-[#13151c] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:border-indigo-500/30 hover:bg-indigo-500/[0.03] transition-all duration-200 cursor-pointer"
     >
       {/* Score ring */}
