@@ -97,3 +97,57 @@ exports.getAnalysisById = async (req, res, next) => {
     next(err)
   }
 }
+
+// PATCH /api/analysis/:id — rename (resumeName only)
+exports.renameAnalysis = async (req, res, next) => {
+  try {
+    const { resumeName } = req.body
+
+    if (!resumeName || !resumeName.trim()) {
+      return res.status(400).json({ success: false, message: 'Title is required.' })
+    }
+    if (resumeName.trim().length > 80) {
+      return res.status(400).json({ success: false, message: 'Title must be 80 characters or fewer.' })
+    }
+
+    const record = await Analysis.findById(req.params.id)
+
+    if (!record) {
+      return res.status(404).json({ success: false, message: 'Analysis not found.' })
+    }
+    if (record.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Forbidden. This is not your analysis.' })
+    }
+
+    record.resumeName = resumeName.trim()
+    await record.save()
+
+    return res.status(200).json({
+      success:    true,
+      message:    'Analysis renamed successfully.',
+      resumeName: record.resumeName,
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// DELETE /api/analysis/:id — ownership check before delete
+exports.deleteAnalysis = async (req, res, next) => {
+  try {
+    const record = await Analysis.findById(req.params.id)
+
+    if (!record) {
+      return res.status(404).json({ success: false, message: 'Analysis not found.' })
+    }
+    if (record.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Forbidden. This is not your analysis.' })
+    }
+
+    await record.deleteOne()
+
+    return res.status(200).json({ success: true, message: 'Analysis deleted successfully.' })
+  } catch (err) {
+    next(err)
+  }
+}

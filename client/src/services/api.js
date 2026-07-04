@@ -23,7 +23,9 @@ export const analyzeProfile = ({ role, experience, skills, projectCount, resumeF
   })
 }
 
-export const getHistory      = ()   => api.get('/api/analysis/history')
-export const getAnalysisById = (id) => api.get(`/api/analysis/${id}`)
+export const getHistory        = ()              => api.get(`/api/analysis/history`)
+export const getAnalysisById   = (id)            => api.get(`/api/analysis/${id}`)
+export const renameAnalysis    = (id, resumeName) => api.patch(`/api/analysis/${id}`, { resumeName })
+export const deleteAnalysis    = (id)            => api.delete(`/api/analysis/${id}`)
 
 export default api
