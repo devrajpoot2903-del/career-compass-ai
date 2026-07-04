@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const User = require('../models/User')
+const Analysis = require('../models/Analysis')
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' })
@@ -71,4 +72,63 @@ exports.getMe = async (req, res) => {
     success: true,
     user: { id: req.user._id, name: req.user.name, email: req.user.email },
   })
+}
+
+// GET /api/auth/profile
+exports.getProfile = async (req, res, next) => {
+  try {
+    const totalAnalyses = await Analysis.countDocuments({ user: req.user._id })
+
+    res.status(200).json({
+      success: true,
+      data: {
+        name:           req.user.name,
+        email:          req.user.email,
+        createdAt:      req.user.createdAt,
+        totalAnalyses,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// PATCH /api/auth/profile
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, password } = req.body
+    const updates = {}
+
+    if (name) {
+      if (name.trim().length < 2) {
+        return res.status(400).json({ success: false, message: 'Name must be at least 2 characters.' })
+      }
+      updates.name = name.trim()
+    }
+
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' })
+      }
+      updates.password = await bcrypt.hash(password, 12)
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: 'Nothing to update.' })
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-password')
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully.',
+      user: { id: updated._id, name: updated.name, email: updated.email },
+    })
+  } catch (err) {
+    next(err)
+  }
 }

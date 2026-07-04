@@ -35,9 +35,15 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <span className="hidden sm:block text-sm text-gray-300 font-medium">
-                  {user.name}
-                </span>
+                <Link
+                  to="/profile"
+                  className="hidden sm:flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-full bg-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-300">
+                    {user.name[0].toUpperCase()}
+                  </div>
+                  <span>{user.name}</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5"
