@@ -2,6 +2,11 @@ const mongoose = require('mongoose')
 
 const analysisSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     targetRole: {
       type: String,
       required: true,
@@ -45,8 +50,8 @@ const analysisSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,       // auto-adds createdAt and updatedAt
-    collection: 'analyses', // explicit collection name
+    timestamps: true,
+    collection: 'analyses',
   }
 )
 

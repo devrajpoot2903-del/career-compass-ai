@@ -13,6 +13,7 @@ exports.analyze = async (req, res, next) => {
     const { role, experience, skills, projectCount } = req.body
 
     console.log('\n📥 [analyze] Request received:')
+    console.log('  user          :', req.user._id)
     console.log('  role          :', role)
     console.log('  experience    :', experience)
     console.log('  skills        :', skills)
@@ -33,6 +34,7 @@ exports.analyze = async (req, res, next) => {
     console.log('✅ Groq response received:', JSON.stringify(groqResult, null, 2))
 
     const saved = await Analysis.create({
+      user:           req.user._id,
       targetRole:     role,
       experience:     experience,
       skills:         Array.isArray(skills) ? skills : [skills].filter(Boolean),
@@ -59,11 +61,11 @@ exports.analyze = async (req, res, next) => {
   }
 }
 
-// GET /api/analysis/history
-exports.getHistory = async (_req, res, next) => {
+// GET /api/analysis/history — only current user's records
+exports.getHistory = async (req, res, next) => {
   try {
     const records = await Analysis
-      .find()
+      .find({ user: req.user._id })
       .select('_id resumeName targetRole experience score candidateLevel createdAt')
       .sort({ createdAt: -1 })
 
@@ -77,13 +79,17 @@ exports.getHistory = async (_req, res, next) => {
   }
 }
 
-// GET /api/analysis/:id
+// GET /api/analysis/:id — ownership check
 exports.getAnalysisById = async (req, res, next) => {
   try {
     const record = await Analysis.findById(req.params.id)
 
     if (!record) {
       return res.status(404).json({ success: false, message: 'Analysis not found.' })
+    }
+
+    if (record.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Forbidden. This is not your analysis.' })
     }
 
     return res.status(200).json({ success: true, data: record })
