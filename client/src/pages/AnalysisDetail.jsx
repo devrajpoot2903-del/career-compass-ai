@@ -4,6 +4,7 @@ import { getAnalysisById } from '../services/api'
 import Navbar from '../components/Navbar'
 import ResultCards from '../components/ResultCards'
 import Roadmap from '../components/Roadmap'
+import { exportAnalysisPdf } from '../utils/exportPdf'
 
 function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -15,9 +16,10 @@ export default function AnalysisDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [record, setRecord]   = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState(null)
+  const [record,      setRecord]      = useState(null)
+  const [loading,     setLoading]     = useState(true)
+  const [error,       setError]       = useState(null)
+  const [pdfLoading,  setPdfLoading]  = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -25,20 +27,27 @@ export default function AnalysisDetail() {
     setError(null)
 
     getAnalysisById(id)
-      .then(({ data }) => {
-        if (!cancelled) setRecord(data.data)
-      })
+      .then(({ data }) => { if (!cancelled) setRecord(data.data) })
       .catch((err) => {
         if (!cancelled) setError(
           err?.response?.data?.message || err.message || 'Failed to load analysis.'
         )
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+      .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
   }, [id])
+
+  const handleDownloadPdf = () => {
+    if (!record || pdfLoading) return
+    setPdfLoading(true)
+    try {
+      exportAnalysisPdf(record)
+    } finally {
+      // Small delay so the button animation is visible
+      setTimeout(() => setPdfLoading(false), 800)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0d0f14] text-white font-sans">
@@ -46,16 +55,41 @@ export default function AnalysisDetail() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8 group"
-        >
-          <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Home
-        </button>
+        {/* Top bar: back + download */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
+          >
+            <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Home
+          </button>
+
+          {/* Download PDF button — only shown when record is loaded */}
+          {record && (
+            <button
+              onClick={handleDownloadPdf}
+              disabled={pdfLoading}
+              className="flex items-center gap-2 text-sm bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              {pdfLoading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF
+                </>
+              )}
+            </button>
+          )}
+        </div>
 
         {/* Loading skeleton */}
         {loading && (
@@ -132,7 +166,6 @@ export default function AnalysisDetail() {
 
             {/* Reuse existing ResultCards + Roadmap */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left: empty form placeholder keeps the grid balanced */}
               <div className="hidden lg:block" />
               <ResultCards
                 submitted={true}
