@@ -12,28 +12,12 @@ exports.analyze = async (req, res, next) => {
 
     const { role, experience, skills, projectCount } = req.body
 
-    console.log('\n📥 [analyze] Request received:')
-    console.log('  user          :', req.user._id)
-    console.log('  role          :', role)
-    console.log('  experience    :', experience)
-    console.log('  skills        :', skills)
-    console.log('  projectCount  :', projectCount)
-    console.log('  file saved to :', req.file.path)
-
     const resumeText = await parseResume(req.file.path)
-
     fs.unlinkSync(req.file.path)
-    console.log('  temp file deleted ✓')
 
-    console.log('\n📄 Extracted Resume Text (first 500 chars):')
-    console.log(resumeText.slice(0, 500))
-    console.log('...')
-
-    console.log('\n🤖 Sending to Groq...')
     const groqResult = await analyzeResume(resumeText)
-    console.log('✅ Groq response received:', JSON.stringify(groqResult, null, 2))
 
-    const saved = await Analysis.create({
+    await Analysis.create({
       user:           req.user._id,
       targetRole:     role,
       experience:     experience,
@@ -47,12 +31,8 @@ exports.analyze = async (req, res, next) => {
       roadmap:        groqResult.roadmap,
       resumeName:     req.file.originalname,
     })
-    console.log('💾 Analysis saved to MongoDB, id:', saved._id)
 
-    return res.status(200).json({
-      success: true,
-      ...groqResult,
-    })
+    return res.status(200).json({ success: true, ...groqResult })
   } catch (err) {
     if (req.file?.path && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path)
@@ -61,7 +41,7 @@ exports.analyze = async (req, res, next) => {
   }
 }
 
-// GET /api/analysis/history — only current user's records
+// GET /api/analysis/history — current user only
 exports.getHistory = async (req, res, next) => {
   try {
     const records = await Analysis
@@ -69,17 +49,13 @@ exports.getHistory = async (req, res, next) => {
       .select('_id resumeName targetRole experience score candidateLevel createdAt')
       .sort({ createdAt: -1 })
 
-    return res.status(200).json({
-      success: true,
-      count:   records.length,
-      data:    records,
-    })
+    return res.status(200).json({ success: true, count: records.length, data: records })
   } catch (err) {
     next(err)
   }
 }
 
-// GET /api/analysis/:id — ownership check
+// GET /api/analysis/:id — ownership enforced
 exports.getAnalysisById = async (req, res, next) => {
   try {
     const record = await Analysis.findById(req.params.id)
@@ -87,7 +63,6 @@ exports.getAnalysisById = async (req, res, next) => {
     if (!record) {
       return res.status(404).json({ success: false, message: 'Analysis not found.' })
     }
-
     if (record.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Forbidden. This is not your analysis.' })
     }
@@ -98,7 +73,7 @@ exports.getAnalysisById = async (req, res, next) => {
   }
 }
 
-// PATCH /api/analysis/:id — rename (resumeName only)
+// PATCH /api/analysis/:id — rename resumeName
 exports.renameAnalysis = async (req, res, next) => {
   try {
     const { resumeName } = req.body
@@ -132,7 +107,7 @@ exports.renameAnalysis = async (req, res, next) => {
   }
 }
 
-// DELETE /api/analysis/:id — ownership check before delete
+// DELETE /api/analysis/:id — ownership enforced
 exports.deleteAnalysis = async (req, res, next) => {
   try {
     const record = await Analysis.findById(req.params.id)
