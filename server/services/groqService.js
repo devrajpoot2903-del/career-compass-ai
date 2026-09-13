@@ -25,8 +25,14 @@ const analyzeResume = async (resumeText) => {
   // Instantiate here — NOT at module load time — so dotenv is already applied
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
+
+
+
+
+
+
   const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: 'openai/gpt-oss-20b',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: `Analyze this resume:\n\n${resumeText}` },
@@ -34,6 +40,12 @@ const analyzeResume = async (resumeText) => {
     temperature: 0.3,
     max_tokens: 1024,
   })
+
+
+
+
+
+
 
   const raw = completion.choices[0]?.message?.content?.trim()
   if (!raw) throw new Error('Groq returned an empty response.')
