@@ -11,20 +11,19 @@ const historyRoutes = require('./routes/historyRoutes')
 
 const app = express()
 
-// 1. PEHLE CORS OPTIONS DEFINE HONGE (Yahan galti thi)
-const corsOptions = {
-    origin: [
-        process.env.CLIENT_URL,
-        "https://career-compass-ai-five-ecru.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:5174"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-};
+// --- Bypassing CORS Completely for Testing (Nuclear Option) ---
+app.use(cors({
+    origin: function (origin, callback) {
+        // Yeh har frontend URL ko allow kar dega (Vercel, Localhost, everything)
+        callback(null, true);
+    },
+    credentials: true
+}));
 
-// 2. PHIR MIDDLEWARES USE HONGE SAAHI ORDER MEIN
-app.use(cors(corsOptions)); // Ab CORS ko pata hai options kya hain
+// Preflight (OPTIONS) requests ko explicitly allow karna
+app.options('*', cors());
+
+// --- Middlewares ---
 app.use(helmet());
 app.use(morgan('dev'))
 app.use(express.json())
