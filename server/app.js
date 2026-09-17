@@ -11,19 +11,16 @@ const historyRoutes = require('./routes/historyRoutes')
 
 const app = express()
 
-// --- Bypassing CORS Completely for Testing (Nuclear Option) ---
+// --- THE MOST BULLETPROOF CORS ---
 app.use(cors({
-    origin: function (origin, callback) {
-        // Yeh har frontend URL ko allow kar dega (Vercel, Localhost, everything)
-        callback(null, true);
-    },
-    credentials: true
+    origin: "https://career-compass-ai-five-ecru.vercel.app", // Exact Vercel URL, no array, no function
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-
-
 // --- Middlewares ---
-app.use(helmet());
+app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
