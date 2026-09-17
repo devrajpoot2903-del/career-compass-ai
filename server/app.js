@@ -11,16 +11,11 @@ const historyRoutes = require('./routes/historyRoutes')
 
 const app = express()
 
-app.use(cors(corsOptions));
-
-// --- Middleware ------------------------------------------------
-app.use(helmet())
-
-// Robust CORS Configuration for Production (Vercel) & Local
+// 1. PEHLE CORS OPTIONS DEFINE HONGE (Yahan galti thi)
 const corsOptions = {
     origin: [
         process.env.CLIENT_URL,
-        "https://career-compass-ai-five-ecru.vercel.app", // Tera live Vercel URL
+        "https://career-compass-ai-five-ecru.vercel.app",
         "http://localhost:5173",
         "http://localhost:5174"
     ],
@@ -28,7 +23,9 @@ const corsOptions = {
     credentials: true,
 };
 
-
+// 2. PHIR MIDDLEWARES USE HONGE SAAHI ORDER MEIN
+app.use(cors(corsOptions)); // Ab CORS ko pata hai options kya hain
+app.use(helmet());
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
