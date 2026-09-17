@@ -1,6 +1,5 @@
 require('dotenv').config()
 const express = require('express')
-const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
 
@@ -11,29 +10,33 @@ const historyRoutes = require('./routes/historyRoutes')
 
 const app = express()
 
-// --- THE MOST BULLETPROOF CORS ---
-app.use(cors({
-    origin: "https://career-compass-ai-five-ecru.vercel.app", // Exact Vercel URL, no array, no function
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-// --- Middlewares ---
-app.use(helmet())
 app.use(morgan('dev'))
+
+// --- DYNAMIC GOD MODE CORS ---
+app.use((req, res, next) => {
+    // Ab yeh tera frontend URL Render ke dashboard (.env) se uthayega
+    const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Origin, X-Requested-With, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
+
+app.use(helmet())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// --- Routes ----------------------------------------------------
 app.use('/api/auth', authRoutes)
 app.use('/api/analyze', analysisRoutes)
 app.use('/api/analysis', historyRoutes)
 
-// --- Health Check ----------------------------------------------
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
-
-// --- Error Handler (must be last) ------------------------------
 app.use(errorHandler)
 
 module.exports = app
