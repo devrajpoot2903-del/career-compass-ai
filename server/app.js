@@ -11,6 +11,8 @@ const historyRoutes = require('./routes/historyRoutes')
 
 const app = express()
 
+app.use(cors(corsOptions));
+
 // --- Middleware ------------------------------------------------
 app.use(helmet())
 
@@ -25,7 +27,7 @@ const corsOptions = {
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
 };
-app.use(cors(corsOptions));
+
 
 app.use(morgan('dev'))
 app.use(express.json())
