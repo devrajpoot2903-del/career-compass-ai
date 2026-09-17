@@ -20,8 +20,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Preflight (OPTIONS) requests ko explicitly allow karna
-app.options('*', cors());
+
 
 // --- Middlewares ---
 app.use(helmet());
