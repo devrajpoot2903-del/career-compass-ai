@@ -1,4 +1,4 @@
-import { exportPdf } from '../utils/exportPdf';
+import { exportAnalysisPdf } from '../utils/exportPdf';
 
 // Demo values shown before first submission
 const DEMO = {
@@ -45,10 +45,15 @@ function mapResult(apiResult) {
 export default function ResultCards({ submitted, apiResult, role, experience }) {
   const display = submitted && apiResult ? mapResult(apiResult) : DEMO
 
-  // --- NAYA FUNCTION: PDF Download trigger karne ke liye ---
+  // --- FIX: Correct function name and single 'record' object passed ---
   const handleDownload = () => {
     if (apiResult) {
-      exportPdf(apiResult, role, experience);
+      exportAnalysisPdf({
+        ...apiResult,
+        targetRole: role,
+        experience: experience,
+        resumeName: 'Career_Analysis_Resume' // PDF function ko resumeName chahiye tha
+      });
     }
   };
 
@@ -158,7 +163,7 @@ export default function ResultCards({ submitted, apiResult, role, experience }) 
         </div>
       </div>
 
-      {/* --- NAYA DOWNLOAD BUTTON - Sirf asli result aane par dikhega --- */}
+      {/* Download Button */}
       {submitted && apiResult && (
         <div className="mt-2 flex justify-center sm:justify-end">
           <button
