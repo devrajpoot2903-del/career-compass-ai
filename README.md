@@ -1,8 +1,10 @@
-# Career Compass AI
+ # Career Compass AI
+
+🚀 **Live Demo:** [https://career-compass-ai-pink.vercel.app](https://career-compass-ai-pink.vercel.app)
 
 > AI-powered resume analysis and personalised career roadmap generator.
 
-Upload your resume PDF, choose your target role and experience level, and receive an instant AI-driven breakdown of your strengths, skill gaps, alternative career paths, and a step-by-step growth roadmap — all stored securely under your account.
+Upload your resume PDF, choose your target role and experience level, and receive an instant AI-driven breakdown of your strengths, skill gaps, alternative career paths, and a step-by-step growth roadmap — all stored securely under your account or locally in Guest Mode.
 
 ---
 
@@ -10,14 +12,13 @@ Upload your resume PDF, choose your target role and experience level, and receiv
 
 | Feature | Description |
 |---|---|
+| **Guest Mode (No Auth Required)** | Try the app instantly without signing up. Reports are saved directly to browser `localStorage`. |
 | **Resume Upload & Parsing** | PDF upload via Multer; text extracted with pdf-parse |
 | **AI Analysis** | Resume text sent to Groq (LLaMA 3.1) — returns score, level, strengths, gaps, alt paths, roadmap |
-| **Analysis History** | All analyses stored in MongoDB; view, rename, or delete any past report |
-| **Analysis Details** | Dedicated page for any historical analysis with full breakdown |
-| **PDF Export** | Download any analysis as a professional A4 report |
-| **JWT Authentication** | Signup / Login / persistent session via localStorage |
-| **User Profile** | View account info, total analyses, edit name and password |
-| **Ownership Enforcement** | Every API endpoint verifies the requesting user owns the resource |
+| **Analysis History** | All analyses stored in MongoDB for registered users; view, rename, or delete any past report |
+| **PDF Export** | Download any analysis as a professional A4 report instantly |
+| **JWT Authentication** | Signup / Login / persistent session for permanent data storage |
+| **High Performance** | Optimised frontend achieving 99/100 Lighthouse performance score |
 
 ---
 
@@ -30,7 +31,7 @@ Upload your resume PDF, choose your target role and experience level, and receiv
 | Database | MongoDB + Mongoose |
 | AI | Groq API — `llama-3.1-8b-instant` |
 | Auth | JWT (`jsonwebtoken`), `bcryptjs` |
-| PDF Parse | `pdf-parse` v2 |
+| Cloud/Hosting | Render (Backend), Vercel (Frontend) |
 
 ---
 
@@ -46,7 +47,7 @@ Upload your resume PDF, choose your target role and experience level, and receiv
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/devrajpoot2903-del/career-compass-ai.git
+git clone [https://github.com/devrajpoot2903-del/career-compass-ai.git](https://github.com/devrajpoot2903-del/career-compass-ai.git)
 cd career-compass-ai
 
 # 2. Install server dependencies
@@ -71,7 +72,7 @@ Fill in `server/.env`:
 | `MONGO_URI` | MongoDB connection string |
 | `GROQ_API_KEY` | Your Groq API key |
 | `NODE_ENV` | `development` or `production` |
-| `CLIENT_URL` | Frontend origin for CORS (default `http://localhost:5173`) |
+| `CLIENT_URL` | Frontend origin for CORS (e.g., `http://localhost:5173` or Vercel URL) |
 | `JWT_SECRET` | Random secret string for signing JWTs (min 32 chars) |
 | `JWT_EXPIRES_IN` | Token expiry e.g. `7d` |
 
@@ -99,23 +100,15 @@ See [`docs/API.md`](docs/API.md) for the full reference.
 | `POST` | `/api/auth/login` | Public | Login, receive JWT |
 | `GET` | `/api/auth/me` | JWT | Current user info |
 | `GET` | `/api/auth/profile` | JWT | Profile + total analyses |
-| `PATCH` | `/api/auth/profile` | JWT | Update name / password |
 
 **Analysis**
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/analyze` | JWT | Upload PDF + analyse |
+| `POST` | `/api/analyze` | Public | Upload PDF + analyse (Saves to DB only if Auth provided) |
 | `GET` | `/api/analysis/history` | JWT | User's analysis list |
 | `GET` | `/api/analysis/:id` | JWT | Full analysis detail |
-| `PATCH` | `/api/analysis/:id` | JWT | Rename analysis |
 | `DELETE` | `/api/analysis/:id` | JWT | Delete analysis |
-
-**System**
-
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| `GET` | `/api/health` | Public | Server health check |
 
 ---
 
@@ -126,49 +119,19 @@ career-compass-ai/
 ├── client/                        # React + Vite frontend
 │   └── src/
 │       ├── components/            # Reusable UI components
-│       │   ├── AnalysisForm.jsx
-│       │   ├── Hero.jsx
-│       │   ├── HistoryCard.jsx
-│       │   ├── HistoryPanel.jsx
-│       │   ├── Navbar.jsx
-│       │   ├── ProtectedRoute.jsx
-│       │   ├── ResultCards.jsx
-│       │   └── Roadmap.jsx
-│       ├── context/
-│       │   └── AuthContext.jsx    # JWT state + localStorage
-│       ├── pages/
-│       │   ├── AnalysisDetail.jsx
-│       │   ├── Home.jsx
-│       │   ├── Login.jsx
-│       │   ├── Profile.jsx
-│       │   └── Signup.jsx
-│       ├── services/
-│       │   └── api.js             # Axios instance + all API helpers
-│       └── utils/
-│           └── exportPdf.js       # jsPDF report generator
+│       ├── context/               # AuthContext (JWT + localStorage)
+│       ├── pages/                 # Home, Login, Signup, Profile
+│       ├── services/              # API connections (Axios)
+│       └── utils/                 # exportPdf.js (jsPDF Logic)
 │
 └── server/                        # Node.js + Express backend
-    ├── config/
-    │   └── db.js                  # MongoDB connection
-    ├── controllers/
-    │   ├── analysisController.js  # Analysis CRUD
-    │   └── authController.js      # Auth + profile
-    ├── middleware/
-    │   ├── authMiddleware.js      # JWT protect()
-    │   ├── errorHandler.js        # Global error handler
-    │   └── upload.js              # Multer config
-    ├── models/
-    │   ├── Analysis.js
-    │   └── User.js
-    ├── routes/
-    │   ├── analysisRoutes.js      # POST /api/analyze
-    │   ├── authRoutes.js          # /api/auth/*
-    │   └── historyRoutes.js       # /api/analysis/*
-    ├── services/
-    │   ├── groqService.js         # Groq AI integration
-    │   └── resumeParser.js        # pdf-parse wrapper
-    ├── app.js                     # Express app config
-    └── server.js                  # Entry point
+    ├── config/                    # DB connections
+    ├── controllers/               # Auth & Analysis Logic
+    ├── middleware/                # JWT protect(), Multer upload
+    ├── models/                    # Mongoose Schemas
+    ├── routes/                    # API Routing
+    ├── services/                  # Groq AI & pdf-parse integrations
+    └── app.js                     # Express app setup
 ```
 
 ---
@@ -178,41 +141,45 @@ career-compass-ai/
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full flow diagram.
 
 ```
-Browser
+Browser (Guest or Auth User)
   └─ React (Vite)
-       │  Axios + JWT header
+       │  Axios + JWT header (if logged in)
        ▼
   Express (Node.js)
-       │  protect() middleware verifies JWT
+       │  Dynamic CORS validation
        ├─ POST /api/analyze
        │       │  Multer saves PDF to /uploads
        │       │  pdf-parse extracts text
        │       │  Groq API returns JSON analysis
-       │       │  Analysis.create() → MongoDB
-       │       └─ JSON response to client
+       │       │  Analysis.create() → MongoDB (Skipped if Guest Mode)
+       │       └─ JSON response to client (Saved to localStorage if Guest)
        │
-       ├─ GET  /api/analysis/history   → MongoDB query (user-scoped)
-       ├─ GET  /api/analysis/:id       → MongoDB findById + ownership
-       ├─ PATCH /api/analysis/:id      → rename resumeName
-       ├─ DELETE /api/analysis/:id     → deleteOne
+       ├─ GET  /api/analysis/history   → MongoDB query
        └─ /api/auth/*                  → JWT signup/login/profile
 ```
 
 ---
 
-## Deployment
+## Deployment (Production)
 
-### Backend (e.g. Railway, Render, Heroku)
+### 1. Backend (Render)
 
-1. Set all environment variables from `.env.example` in the platform dashboard
-2. Build command: `npm install`
-3. Start command: `node server.js`
+1. Create a New Web Service on [Render](https://render.com).
+2. Set Root Directory to `server`.
+3. Build Command: `npm install` | Start Command: `node server.js`
+4. Add all `.env` variables (Do not add `CLIENT_URL` until Vercel is deployed).
 
-### Frontend (e.g. Vercel, Netlify)
+### 2. Frontend (Vercel)
 
-1. Set `VITE_API_BASE_URL=https://your-backend-url.com` as an environment variable
-2. Build command: `npm run build`
-3. Publish directory: `dist`
+1. Import repository to [Vercel](https://vercel.com).
+2. Set Root Directory to `client`.
+3. Add Environment Variable: `VITE_API_BASE_URL` = `https://your-render-backend-url.onrender.com`.
+4. Deploy and copy the Vercel Production Domain.
+
+### 3. The Final Handshake
+1. Go back to Render Dashboard -> Environment Variables.
+2. Add `CLIENT_URL` = `https://your-vercel-frontend-url.vercel.app` (Exact URL, no trailing slash).
+3. Save and let Render auto-restart.
 
 ---
 
@@ -220,7 +187,5 @@ Browser
 
 - **Job Description Matching** — compare resume against a specific JD
 - **Multi-resume Comparison** — side-by-side analysis of two resumes
-- **Email Reports** — send PDF report to user's inbox
 - **LinkedIn Import** — parse profile URL instead of PDF upload
 - **Admin Dashboard** — platform-wide analytics
-- **Subscription Tiers** — rate limiting and premium analysis models
