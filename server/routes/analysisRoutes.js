@@ -5,6 +5,6 @@ const { protect } = require('../middleware/authMiddleware')
 const { analyze } = require('../controllers/analysisController')
 
 // POST /api/analyze — protected
-router.post('/', protect, upload.single('resume'), analyze)
+router.post('/', upload.single('resume'), analyze)
 
 module.exports = router

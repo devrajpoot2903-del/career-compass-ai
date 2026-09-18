@@ -17,20 +17,23 @@ exports.analyze = async (req, res, next) => {
 
     const groqResult = await analyzeResume(resumeText)
 
-    await Analysis.create({
-      user:           req.user._id,
-      targetRole:     role,
-      experience:     experience,
-      skills:         Array.isArray(skills) ? skills : [skills].filter(Boolean),
-      projectCount:   Number(projectCount) || 0,
-      score:          groqResult.score,
-      candidateLevel: groqResult.candidateLevel,
-      strengths:      groqResult.strengths,
-      gaps:           groqResult.gaps,
-      altPaths:       groqResult.altPaths,
-      roadmap:        groqResult.roadmap,
-      resumeName:     req.file.originalname,
-    })
+    // --- SIRF LOGGED IN USERS KA DATA DB MEIN SAVE HOGA ---
+    if (req.user) {
+      await Analysis.create({
+        user: req.user._id,
+        targetRole: role,
+        experience: experience,
+        skills: Array.isArray(skills) ? skills : [skills].filter(Boolean),
+        projectCount: Number(projectCount) || 0,
+        score: groqResult.score,
+        candidateLevel: groqResult.candidateLevel,
+        strengths: groqResult.strengths,
+        gaps: groqResult.gaps,
+        altPaths: groqResult.altPaths,
+        roadmap: groqResult.roadmap,
+        resumeName: req.file.originalname,
+      })
+    }
 
     return res.status(200).json({ success: true, ...groqResult })
   } catch (err) {
@@ -98,8 +101,8 @@ exports.renameAnalysis = async (req, res, next) => {
     await record.save()
 
     return res.status(200).json({
-      success:    true,
-      message:    'Analysis renamed successfully.',
+      success: true,
+      message: 'Analysis renamed successfully.',
       resumeName: record.resumeName,
     })
   } catch (err) {

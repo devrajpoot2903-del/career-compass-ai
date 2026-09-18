@@ -1,3 +1,5 @@
+import { exportPdf } from '../utils/exportPdf';
+
 // Demo values shown before first submission
 const DEMO = {
   score: 85,
@@ -22,8 +24,8 @@ function mapResult(apiResult) {
   const gaps = (apiResult.gaps || []).map((label, i) => ({
     label,
     priority: i === 0 ? 'High Priority' : 'Mid Priority',
-    color:    i === 0 ? 'bg-red-500'   : 'bg-yellow-500',
-    pct:      i === 0 ? 75             : 45,
+    color: i === 0 ? 'bg-red-500' : 'bg-yellow-500',
+    pct: i === 0 ? 75 : 45,
   }))
 
   const altPaths = (apiResult.altPaths || []).map((title, i) => ({
@@ -32,9 +34,9 @@ function mapResult(apiResult) {
   }))
 
   return {
-    score:          apiResult.score ?? 75,
+    score: apiResult.score ?? 75,
     candidateLevel: apiResult.candidateLevel ?? 'High Potential Candidate',
-    strengths:      apiResult.strengths ?? [],
+    strengths: apiResult.strengths ?? [],
     gaps,
     altPaths,
   }
@@ -42,6 +44,13 @@ function mapResult(apiResult) {
 
 export default function ResultCards({ submitted, apiResult, role, experience }) {
   const display = submitted && apiResult ? mapResult(apiResult) : DEMO
+
+  // --- NAYA FUNCTION: PDF Download trigger karne ke liye ---
+  const handleDownload = () => {
+    if (apiResult) {
+      exportPdf(apiResult, role, experience);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,11 +127,10 @@ export default function ResultCards({ submitted, apiResult, role, experience }) 
             <div key={i}>
               <div className="flex justify-between items-center mb-1.5">
                 <span className="text-sm text-gray-300">{gap.label}</span>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
-                  gap.priority === 'High Priority'
-                    ? 'bg-red-500/20 text-red-400'
-                    : 'bg-yellow-500/20 text-yellow-400'
-                }`}>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${gap.priority === 'High Priority'
+                  ? 'bg-red-500/20 text-red-400'
+                  : 'bg-yellow-500/20 text-yellow-400'
+                  }`}>
                   {gap.priority}
                 </span>
               </div>
@@ -149,6 +157,21 @@ export default function ResultCards({ submitted, apiResult, role, experience }) 
           ))}
         </div>
       </div>
+
+      {/* --- NAYA DOWNLOAD BUTTON - Sirf asli result aane par dikhega --- */}
+      {submitted && apiResult && (
+        <div className="mt-2 flex justify-center sm:justify-end">
+          <button
+            onClick={handleDownload}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download Report (PDF)
+          </button>
+        </div>
+      )}
 
     </div>
   )

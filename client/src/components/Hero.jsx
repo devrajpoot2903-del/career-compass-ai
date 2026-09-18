@@ -1,4 +1,4 @@
-export default function Hero() {
+export default function Hero({ onStartClick }) {
   return (
     <section className="relative overflow-hidden bg-[#0d0f14] pt-20 pb-16 text-center">
       {/* Background glow */}
@@ -15,7 +15,7 @@ export default function Hero() {
           against industry demands and find your optimal growth path.
         </p>
         <div className="mt-8">
-          <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-8 py-3 rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40">
+          <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-8 py-3 rounded-lg transition-all duration-200 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40" onClick={onStartClick} >
             Start Analysis
           </button>
         </div>
